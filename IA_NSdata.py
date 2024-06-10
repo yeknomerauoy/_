@@ -635,16 +635,16 @@ epochs  = 500
 Flag_pretrain = False # True #If true reads the nets from last run
 
 
-Diff = 0.00125 #Such that Re = 320
+Diff = 0.00039 #Such that Re = 320
 rho = 1.
 T = 0.5 #total duraction
 #nPt_time = 50 #number of time-steps
 
 Flag_x_length = True #if True scales the eqn such that the length of the domain is = X_scale
-X_scale = 3.0 #The length of the  domain (need longer length for separation region)
-Y_scale = 2.0 
+X_scale = 1.0 #The length of the  domain (need longer length for separation region)
+Y_scale = 1.0 
 U_scale = 1.0
-U_BC_in = 0.5
+U_BC_in = 1.0
 
 
 Lambda_div = 1.  #penalty factor for continuity eqn 
@@ -690,7 +690,7 @@ y  = np.reshape(y_buff_mesh , (np.size(y_buff_mesh [:]),1))
 
 
 nPt = 130  
-xStart = 0.
+xStart = 0.0
 xEnd = 1.
 yStart = 0.
 yEnd = 1.0
@@ -726,8 +726,11 @@ y_vtk_mesh = np.zeros((np.size(x_buff_mesh [:]),1))
 #point_data = vtk.vtkUnstructuredGrid()
 #point_data.SetPoints(VTKpoints)
 
-xb_in  = np.reshape(x_vtk_mesh , (np.size(x_vtk_mesh[:]),1)) 
-yb_in  = np.reshape(y_vtk_mesh , (np.size(y_vtk_mesh[:]),1))
+#xb_in  = np.reshape(x_vtk_mesh , (np.size(x_vtk_mesh[:]),1)) 
+#yb_in  = np.reshape(y_vtk_mesh , (np.size(y_vtk_mesh[:]),1))
+
+xb_in  = np.hstack((np.zeros(50),np.ones(50)))
+yb_in  = np.hstack((np.linspace(0,1,50),np.linspace(0,1,50)))
 
 #print ('Loading', bc_file_wall)
 #reader = vtk.vtkUnstructuredGridReader()
@@ -746,17 +749,17 @@ yb_in  = np.reshape(y_vtk_mesh , (np.size(y_vtk_mesh[:]),1))
 #	VTKpoints.InsertPoint(i, pt_iso[0], pt_iso[1], pt_iso[2])
 #point_data = vtk.vtkUnstructuredGrid()
 #point_data.SetPoints(VTKpoints)
-xb_wall  = np.reshape(x_vtk_mesh , (np.size(x_vtk_mesh [:]),1)) 
-yb_wall  = np.reshape(y_vtk_mesh , (np.size(y_vtk_mesh [:]),1))
+xb_wall  = np.hstack((np.linspace(0,1,50),np.linspace(0,1,50)))
+yb_wall  = np.hstack((np.zeros(50),np.ones(50)))
 
 
 
 
-#u_in_BC = np.linspace(U_BC_in, U_BC_in, n_points) #constant uniform BC
-u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
+u_in_BC = np.linspace(U_BC_in, U_BC_in, 100) #constant uniform BC
+#u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
 
-n_pointsw=np.size(x_vtk_mesh [:])
-v_in_BC = np.linspace(0., 0., n_pointsw)
+n_pointsw=100
+v_in_BC = np.linspace(0.002, 0., n_pointsw)
 u_wall_BC = np.linspace(0., 0., n_pointsw)
 v_wall_BC = np.linspace(0., 0., n_pointsw)
 #t_BC = np.linspace(0., T, nPt_BC)
@@ -813,15 +816,15 @@ print('shape of ub',ub.shape)
 
 
 
-path = os.getcwd() + "/Desktop/Results/"
+path = os.getcwd() + "/Desktop/output/"
 
 
 
 ##### Read data here#########
 
 #!!specify pts location here:
-x_data = [1.8, 2.0, 1.5, 1.75, 2.1 ] 
-y_data =[0.4, 0.5, 0.2, 0.9, 0.75 ]
+x_data = [0.719, 0.523, 0.327, 0.751, 0.555 ] 
+y_data =[0.597, 0.45, 0.303, 0.173, 0.126 ]
 z_data  = [0.,0.,0.,0.,0. ]
 
 
@@ -851,8 +854,8 @@ y_data = np.asarray(y_data) #convert to numpy
 #probe.Update()
 #array = probe.GetOutput().GetPointData().GetArray(fieldname)
 #data_vel = VN.vtk_to_numpy(array)
-u_buff_mesh = [0.0, 0.001, 0.001, 0.00, 0.001] 
-v_buff_mesh =[0.01, 0.009, 0.021, 0.02, 0.004 ]
+u_buff_mesh = [0.001, 0.001, 0.000, 0.001, 0.001] 
+v_buff_mesh =[0.021, 0.018, 0.000, 0.018, 0.02 ]
 
 
 u_buff_mesh = np.asarray(u_buff_mesh)  #convert to numpy 
