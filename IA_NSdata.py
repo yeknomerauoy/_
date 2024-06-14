@@ -406,6 +406,13 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 		out1_u = out1_u.view(len(out1_u), -1)
 		out1_v = out1_v.view(len(out1_v), -1)
 
+		#net_in2 = torch.cat((xb_inlet, yb_inlet), 1)
+		#out2_u = net2_u(net_in2)
+		#out2_v = net2_v(net_in2)
+
+		#out2_u = out2_u.view(len(out2_u), -1)
+		#out2_v = out2_v.view(len(out2_v), -1)
+
 	
 
 	
@@ -635,16 +642,16 @@ epochs  = 500
 Flag_pretrain = False # True #If true reads the nets from last run
 
 
-Diff = 0.00039 #Such that Re = 320
-rho = 1.
+Diff = 10e-6 #Such that Re = 320
+rho = 1000.
 T = 0.5 #total duraction
 #nPt_time = 50 #number of time-steps
 
 Flag_x_length = True #if True scales the eqn such that the length of the domain is = X_scale
-X_scale = 1.0 #The length of the  domain (need longer length for separation region)
-Y_scale = 1.0 
+X_scale = 1000 #The length of the  domain (need longer length for separation region)
+Y_scale = 1000 
 U_scale = 1.0
-U_BC_in = 1.0
+U_BC_in = 0.02
 
 
 Lambda_div = 1.  #penalty factor for continuity eqn 
@@ -755,11 +762,11 @@ yb_wall  = np.hstack((np.zeros(50),np.ones(50)))
 
 
 
-u_in_BC = np.linspace(U_BC_in, U_BC_in, 100) #constant uniform BC
-#u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
+#u_in_BC = np.linspace(U_BC_in, U_BC_in, 100) #constant uniform BC
+u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
 
 n_pointsw=100
-v_in_BC = np.linspace(0.002, 0., n_pointsw)
+v_in_BC = np.linspace(0.0, 0., n_pointsw)
 u_wall_BC = np.linspace(0., 0., n_pointsw)
 v_wall_BC = np.linspace(0., 0., n_pointsw)
 #t_BC = np.linspace(0., T, nPt_BC)
@@ -854,8 +861,8 @@ y_data = np.asarray(y_data) #convert to numpy
 #probe.Update()
 #array = probe.GetOutput().GetPointData().GetArray(fieldname)
 #data_vel = VN.vtk_to_numpy(array)
-u_buff_mesh = [0.001, 0.001, 0.000, 0.001, 0.001] 
-v_buff_mesh =[0.021, 0.018, 0.000, 0.018, 0.02 ]
+v_buff_mesh = [0.001, 0.001, 0.000, 0.001, 0.001] 
+u_buff_mesh =[0.021, 0.018, 0.02, 0.018, 0.02 ]
 
 
 u_buff_mesh = np.asarray(u_buff_mesh)  #convert to numpy 
