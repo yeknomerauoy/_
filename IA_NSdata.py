@@ -515,6 +515,8 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 				loss_data_tot = loss_data_tot / n
 				print('*****Total avg Loss : Loss eqn {:.10f} Loss BC {:.10f} Loss data {:.10f} ****'.format(loss_eqn_tot, loss_bc_tot,loss_data_tot) )
 				print('learning rate is ', optimizer_u.param_groups[0]['lr'], optimizer_v.param_groups[0]['lr'])
+				if ( loss_eqn_tot<1 and loss_bc_tot<2 and loss_data_tot<1):
+					break
 		
 			if(0): #This causes out of memory in cuda in autodiff
 				loss_eqn = criterion(x,y)	
@@ -642,16 +644,16 @@ epochs  = 500
 Flag_pretrain = False # True #If true reads the nets from last run
 
 
-Diff = 10e-6 #Such that Re = 320
-rho = 1000.
+Diff = 10e-3 #Such that Re = 320
+rho = 1.
 T = 0.5 #total duraction
 #nPt_time = 50 #number of time-steps
 
 Flag_x_length = True #if True scales the eqn such that the length of the domain is = X_scale
-X_scale = 1000 #The length of the  domain (need longer length for separation region)
-Y_scale = 1000 
-U_scale = 1.0
-U_BC_in = 0.02
+X_scale = 1 #The length of the  domain (need longer length for separation region)
+Y_scale = 1 
+U_scale = 0.01
+U_BC_in = 2
 
 
 Lambda_div = 1.  #penalty factor for continuity eqn 
@@ -689,11 +691,14 @@ if (not Flag_x_length):
 #point_data = vtk.vtkUnstructuredGrid()
 #point_data.SetPoints(VTKpoints)
 
-x_buff_mesh=file_buff['x'].to_numpy()
-y_buff_mesh=file_buff['y'].to_numpy()
+#x_buff_mesh=file_buff['x'].to_numpy()
+#y_buff_mesh=file_buff['y'].to_numpy()
+x_buff_mesh=np.hstack((np.linspace(0.1,0.9,50).astype('float64'),)*20)
+y_buff_mesh=np.repeat(np.linspace(0.9,0.1,20).astype('float64'),50)
 x  = np.reshape(x_buff_mesh , (np.size(x_buff_mesh [:]),1)) 
 y  = np.reshape(y_buff_mesh , (np.size(y_buff_mesh [:]),1))
-
+print(x_buff_mesh)
+print(y_buff_mesh)
 
 
 nPt = 130  
@@ -762,8 +767,8 @@ yb_wall  = np.hstack((np.zeros(50),np.ones(50)))
 
 
 
-#u_in_BC = np.linspace(U_BC_in, U_BC_in, 100) #constant uniform BC
-u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
+u_in_BC = np.linspace(U_BC_in, U_BC_in, 100) #constant uniform BC
+#u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
 
 n_pointsw=100
 v_in_BC = np.linspace(0.0, 0., n_pointsw)
@@ -861,8 +866,8 @@ y_data = np.asarray(y_data) #convert to numpy
 #probe.Update()
 #array = probe.GetOutput().GetPointData().GetArray(fieldname)
 #data_vel = VN.vtk_to_numpy(array)
-v_buff_mesh = [0.001, 0.001, 0.000, 0.001, 0.001] 
-u_buff_mesh =[0.021, 0.018, 0.02, 0.018, 0.02 ]
+v_buff_mesh = [0.0001, 0.0001, 0.000, 0.0001, 0.0] 
+u_buff_mesh =[0.021, 0.019, 0.02, 0.019, 0.02 ]
 
 
 u_buff_mesh = np.asarray(u_buff_mesh)  #convert to numpy 
