@@ -298,7 +298,7 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 
 				nn.Linear(h_n,1),
 			)
-		#This function defines the forward rule of
+		#This function defines the forward rule ofbreak
 		#output respect to input.
 		def forward(self,x):
 			output = self.main(x)
@@ -406,12 +406,12 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 		out1_u = out1_u.view(len(out1_u), -1)
 		out1_v = out1_v.view(len(out1_v), -1)
 
-		#net_in2 = torch.cat((xb_inlet, yb_inlet), 1)
-		#out2_u = net2_u(net_in2)
-		#out2_v = net2_v(net_in2)
+		net_in2 = torch.cat((xb_inlet, yb_inlet), 1)
+		out2_u = net2_u(net_in2)
+		out2_v = net2_v(net_in2)
 
-		#out2_u = out2_u.view(len(out2_u), -1)
-		#out2_v = out2_v.view(len(out2_v), -1)
+		out2_u = out2_u.view(len(out2_u), -1)
+		out2_v = out2_v.view(len(out2_v), -1)
 
 	
 
@@ -419,10 +419,10 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 
 		loss_f = nn.MSELoss()
 		loss_noslip = loss_f(out1_u, torch.zeros_like(out1_u)) + loss_f(out1_v, torch.zeros_like(out1_v)) 
-		#loss_inlet = loss_f(out2_u, ub_inlet) + loss_f(out2_v, torch.zeros_like(out2_v) )
+		loss_inlet = loss_f(out2_u, ub_inlet) + loss_f(out2_v, torch.zeros_like(out2_v) )
 
 	
-		return loss_noslip
+		return loss_noslip+loss_inlet
 
 
 	def Loss_data(xd,yd,ud,vd ):
@@ -515,7 +515,7 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 				loss_data_tot = loss_data_tot / n
 				print('*****Total avg Loss : Loss eqn {:.10f} Loss BC {:.10f} Loss data {:.10f} ****'.format(loss_eqn_tot, loss_bc_tot,loss_data_tot) )
 				print('learning rate is ', optimizer_u.param_groups[0]['lr'], optimizer_v.param_groups[0]['lr'])
-				if ( loss_eqn_tot<1 and loss_bc_tot<2 and loss_data_tot<1):
+				if ( loss_eqn_tot<1 and loss_bc_tot<1.2 and loss_data_tot<1.3):
 					break
 		
 			if(0): #This causes out of memory in cuda in autodiff
@@ -590,6 +590,17 @@ def geo_train(device,x_in,y_in,xb,yb,ub,vb,xd,yd,ud,vd,batchsize,learning_rate,e
 	plt.colorbar()
 	plt.show()
 
+	plt.quiver(x.detach().numpy(), y.detach().numpy(), output_u, output_v, color='g',linewidth=2) 
+	plt.title('Vector Field') 
+  
+# Setting x, y boundary limits 
+	plt.xlim(0.1, 1) 
+	plt.ylim(0.0, 0.8) 
+  
+# Show plot with grid 
+	plt.grid() 
+	plt.show() 
+
 
 
 	
@@ -617,7 +628,7 @@ device = torch.device("cuda")
 
 Flag_batch = True #False #USe batch or not  #With batch getting error...
 Flag_BC_exact = False #If True enforces BC exactly HELPS ALOT!!! Not implemented in 2D
-Lambda_BC  = 1. 
+Lambda_BC  = 2. 
 
 Lambda_data = 1.
 
@@ -639,7 +650,7 @@ batchsize = 256
 learning_rate = 1e-5 
 
 
-epochs  = 500
+epochs  = 1000
 
 Flag_pretrain = False # True #If true reads the nets from last run
 
@@ -693,8 +704,8 @@ if (not Flag_x_length):
 
 #x_buff_mesh=file_buff['x'].to_numpy()
 #y_buff_mesh=file_buff['y'].to_numpy()
-x_buff_mesh=np.hstack((np.linspace(0.1,0.9,50).astype('float64'),)*20)
-y_buff_mesh=np.repeat(np.linspace(0.9,0.1,20).astype('float64'),50)
+x_buff_mesh=np.hstack((np.linspace(0.1,0.9,50).astype('float64'),)*30)
+y_buff_mesh=np.repeat(np.linspace(0.9,0.1,30).astype('float64'),50)
 x  = np.reshape(x_buff_mesh , (np.size(x_buff_mesh [:]),1)) 
 y  = np.reshape(y_buff_mesh , (np.size(y_buff_mesh [:]),1))
 print(x_buff_mesh)
@@ -770,7 +781,7 @@ yb_wall  = np.hstack((np.zeros(50),np.ones(50)))
 u_in_BC = np.linspace(U_BC_in, U_BC_in, 100) #constant uniform BC
 #u_in_BC = (yb_in[:]) * ( 0.2 - yb_in[:] )  / 0.01 * U_BC_in #parabolic
 
-n_pointsw=100
+n_pointsw=1000
 v_in_BC = np.linspace(0.0, 0., n_pointsw)
 u_wall_BC = np.linspace(0., 0., n_pointsw)
 v_wall_BC = np.linspace(0., 0., n_pointsw)
@@ -835,8 +846,8 @@ path = os.getcwd() + "/Desktop/output/"
 ##### Read data here#########
 
 #!!specify pts location here:
-x_data = [0.719, 0.523, 0.327, 0.751, 0.555 ] 
-y_data =[0.597, 0.45, 0.303, 0.173, 0.126 ]
+x_data = file_buff['x'].to_numpy()
+y_data = file_buff['y'].to_numpy()
 z_data  = [0.,0.,0.,0.,0. ]
 
 
@@ -866,8 +877,8 @@ y_data = np.asarray(y_data) #convert to numpy
 #probe.Update()
 #array = probe.GetOutput().GetPointData().GetArray(fieldname)
 #data_vel = VN.vtk_to_numpy(array)
-v_buff_mesh = [0.0001, 0.0001, 0.000, 0.0001, 0.0] 
-u_buff_mesh =[0.021, 0.019, 0.02, 0.019, 0.02 ]
+v_buff_mesh = file_buff['v'].to_numpy()
+u_buff_mesh = file_buff['u'].to_numpy()
 
 
 u_buff_mesh = np.asarray(u_buff_mesh)  #convert to numpy 
